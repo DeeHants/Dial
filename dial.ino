@@ -60,37 +60,17 @@ void encoderInterrupt() {
 void loop() {
   bool activity = false;
 
-  // Read encoder position
+  // Read encoder position and velocity
   int curr_rotary = encoder.getPosition();
-  // Calculate the direction from our value, else we can have race conditions where direction and position don't update together
-  RotaryEncoder::Direction direction;
-  if (last_rotary > curr_rotary) {
-    direction = RotaryEncoder::Direction::COUNTERCLOCKWISE;
-  } else if (last_rotary < curr_rotary) {
-    direction = RotaryEncoder::Direction::CLOCKWISE;
-  } else {
-    direction = RotaryEncoder::Direction::NOROTATION;
-  }
+  int velocity = curr_rotary - last_rotary;
   last_rotary = curr_rotary;
 
   // Handle dial rotation
-  if (direction != RotaryEncoder::Direction::NOROTATION) {
+  if (velocity != 0) {
     #if DEBUG
-    Serial.println("Encoder value: " + String(curr_rotary) + ", direction: " + String((int)direction));
+    Serial.println("Encoder value: " + String(curr_rotary) + ", velocity: " + String(velocity));
     #endif
-
-    if (direction == RotaryEncoder::Direction::CLOCKWISE) {
-      #if DEBUG
-      Serial.println(" Rotate+");
-      #endif
-      SurfaceDial.rotate(dial_distance);
-    }
-    if (direction == RotaryEncoder::Direction::COUNTERCLOCKWISE) {
-      #if DEBUG
-      Serial.println(" Rotate-");
-      #endif
-      SurfaceDial.rotate(-dial_distance);
-    }
+    SurfaceDial.rotate(dial_distance * velocity);
 
     // Set the flag to enable the LED
     activity = true;
