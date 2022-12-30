@@ -16,9 +16,12 @@ bool last_button = false;
 
 // Pixel (neopixel pixel of 1)
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUM_NEOPIXEL, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
-const int pixel_brightness = 255; // full brightness
+const int PIXEL_BRIGHTNESS = 255; // full brightness
+// Control the fade
 int pixel_fade = 0; // Brightness while fading
 int pixel_turned = 0; // Time pixel turned on
+const int PIXEL_ON_TIME = 2000; // 2s
+const int PIXEL_FADE_TIME = 2000; // 2s
 
 // Dial emulation
 const int dial_distance = 100;
@@ -99,8 +102,8 @@ void loop() {
 
   // Update pixel
   if (activity) {
-    if (pixel_fade < pixel_brightness) {
-      pixel.setBrightness(pixel_brightness);
+    if (pixel_fade < PIXEL_BRIGHTNESS) {
+      pixel.setBrightness(PIXEL_BRIGHTNESS);
       pixel.setPixelColor(0, pixel.Color(0, 0, 255)); // blue
       pixel.show();
     }
@@ -109,18 +112,22 @@ void loop() {
     Serial.println("Pixel turned on");
     #endif
     // Keep track of when it was enabled
-    pixel_fade = pixel_brightness;
+    pixel_fade = PIXEL_BRIGHTNESS;
     pixel_turned = millis();
 
-  } else if (pixel_fade > 0 && (millis() - pixel_turned) > 1000) {
-    pixel_fade = pixel_fade - 1;
-    if (pixel_fade < 0) { pixel_fade = 0; } // Limit it to 0
-    #if DEBUG
-    Serial.println("Pixel fading " + String(pixel_fade));
-    #endif
-    pixel.setBrightness(pixel_fade);
-    pixel.show();
+  } else if (pixel_fade > 0) {
+    int time_since = millis() - pixel_turned;
+    if (time_since > PIXEL_ON_TIME) {
+      // Fade out over the next few seconds
+      int fade_time = time_since - PIXEL_ON_TIME; // Time since the start of the fade
+      float fade_multiplier = (float)1 - (fade_time / (float)PIXEL_FADE_TIME); // 0 -> 1, 1000 -> 0 (assuming 1s fade)
+      pixel_fade = PIXEL_BRIGHTNESS * fade_multiplier;
+      if (pixel_fade < 0) { pixel_fade = 0; } // Limit it to 0
+      #if DEBUG
+      Serial.println("Pixel fading for " + String(fade_time) + ", " + String(fade_multiplier) + ": " + String(pixel_fade));
+      #endif
+      pixel.setBrightness(pixel_fade);
+      pixel.show();
+    }
   }
-
-  delay(10); // Stop repeated triggers
 }
