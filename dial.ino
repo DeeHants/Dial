@@ -34,8 +34,8 @@ void setup() {
   #endif
 
   // Setup the encoder
-  attachInterrupt(PIN_ENCODER_A, checkPosition, CHANGE);
-  attachInterrupt(PIN_ENCODER_B, checkPosition, CHANGE);
+  attachInterrupt(PIN_ENCODER_A, encoderInterrupt, CHANGE);
+  attachInterrupt(PIN_ENCODER_B, encoderInterrupt, CHANGE);
   // and button
   pinMode(PIN_ENCODER_SWITCH, INPUT_PULLDOWN);
   // Read current encoder position
@@ -53,7 +53,7 @@ void setup() {
 }
 
 // Interrupt to handle rotary changes
-void checkPosition() {
+void encoderInterrupt() {
   encoder.tick();
 }
 
