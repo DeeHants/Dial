@@ -12,7 +12,11 @@
 // Encoder
 RotaryEncoder encoder(PIN_ENCODER_A, PIN_ENCODER_B, RotaryEncoder::LatchMode::FOUR3);
 int last_rotary = 0; // Used to check for direction change
+
+// Button
 bool last_button = false;
+int button_debounce = 0;
+const int DEBOUNCE_TIME = 100;
 
 // Pixel (neopixel pixel of 1)
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUM_NEOPIXEL, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
@@ -81,7 +85,8 @@ void loop() {
 
   // Read switch state
   bool curr_button = digitalRead(PIN_ENCODER_SWITCH);
-  if (curr_button != last_button) {
+  int time_since_press = millis() - button_debounce;
+  if (curr_button != last_button && time_since_press > DEBOUNCE_TIME) {
     if (curr_button && !last_button) { // Press
       #if DEBUG
       Serial.println("Press");
@@ -95,6 +100,7 @@ void loop() {
       SurfaceDial.release();
     }
     last_button = curr_button;
+    button_debounce = millis();
 
     // Set the flag to enable the LED
     activity = true;
