@@ -7,7 +7,7 @@
 #include <HID-Project.h>
 
 // Set to 1 to enable the serial debug output
-#define DEBUG 1
+#define DEBUG 0
 
 // Encoder
 RotaryEncoder encoder(PIN_ENCODER_A, PIN_ENCODER_B, RotaryEncoder::LatchMode::FOUR3);
@@ -34,7 +34,6 @@ void setup() {
   // Debug output
   #if DEBUG
   Serial.begin(115200);
-  // while (!Serial);
   delay(100);
 
   Serial.println("Rotary Trinkey dial");
